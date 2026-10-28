@@ -1,0 +1,46 @@
+# Virtual environments
+venv*/
+venv/
+.venv/
+env/
+
+# Secrets and passwords
+*.env
+*.env
+*.key
+*.pem
+
+# Python cache
+__pycache__/
+.pytest_cache/
+
+# Generated files
+reports/
+downloaded_files/
+*.xlsx
+
+# Auxiliar files
+info.md
+
+# Temporal files
+.~*
+
+# DataBase
+*.db
+
+# Logs
+*.log
+
+# PyCharm
+.idea/
+
+# VSCode
+.vscode/
+
+# Pyenv
+.python-version
+
+
+# Build and distribution files
+build/
+dist/
