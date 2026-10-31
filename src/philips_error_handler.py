@@ -49,3 +49,9 @@ class PhilipsNoDataError(PhilipsDownloaderError):
     """Exception raised for no data errors in the Philips downloader."""
     def __init__(self, message):
         self.message = message
+
+
+class PhilipsElementNotFoundError(PhilipsDownloaderError):
+    """Exception raised for elemet not found errors in the Philips downloader."""
+    def __init__(self, message):
+            self.message = message

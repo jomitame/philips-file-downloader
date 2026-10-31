@@ -5,7 +5,8 @@ from philips_document_downloader import PhilipsDocumentDownloader
 from database_namager import PhilipsDatabaseManager
 from excel_manager import PhilipsExcelManager
 
-from constants import PORTAL_USER, PORTAL_PASSWORD, WEBPAGE
+from constants import PORTAL_USER, PORTAL_PASSWORD
+from constants import PAGES
 from constants import DATABASE_NAME
 from constants import EXCEL_FILE_NAME
 
@@ -32,7 +33,7 @@ def create_philips_names_report(database_manager: PhilipsDatabaseManager):
 
 def download_documents(database_manager: PhilipsDatabaseManager):
     pdd = PhilipsDocumentDownloader(database_manager)
-    pdd.navegate(WEBPAGE, PORTAL_USER, PORTAL_PASSWORD)
+    pdd.navegate(PAGES.LOGIN.value, PORTAL_USER, PORTAL_PASSWORD)
 
 if __name__ == "__main__":
     database_manager = PhilipsDatabaseManager(DB_FILE)

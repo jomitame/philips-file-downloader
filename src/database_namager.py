@@ -72,7 +72,7 @@ class PhilipsDatabaseManager:
 		except (sqlite3.Error, KeyError) as e:
 			raise PhilipsDatabaseError(f"Error guardando la lista en lote {e}")
 
-	def save_name(self, dicci_list: list):
+	def save_names(self, dicci_list: list):
 		try:
 			cursor = self.conn.cursor()
 			query = '''
