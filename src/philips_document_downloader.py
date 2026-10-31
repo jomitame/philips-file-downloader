@@ -73,6 +73,20 @@ class PhilipsDocumentDownloader:
         except Exception as e:
             raise PhilipsCancelError(f"Canceling process")
 
+    def click_by_role_and_name(self, page: Page, element_role: str, element_name:str):
+        """Hace click en un elemento por el rol y nombre"""
+        try:
+            philips_logger.info(f"⏳ Waiting for {element_name} ...")
+            page.get_by_role(element_role, name=element_name).click()
+            time.sleep(PAUSES_TIME.QUICK.value)
+            philips_logger.info(f"🕵️ {element_name} detected.")
+            philips_logger.info(f"🖱️ Clicking to {element_name}")
+            time.sleep(PAUSES_TIME.SHORT.value)
+        except TimeoutError as e:
+            raise PhilipsElementNotFoundError(f"No se pudo encontrar {element_name} con rol: {element_role}")
+        except Exception as e:
+            raise PhilipsCancelError(f"Canceling process")
+
     def click_group_element(self, page: Page, element_name: str, group_selector: str, position: int):
         """Hace click en un elemento de un grupo de elementos"""
         try:
@@ -87,7 +101,6 @@ class PhilipsDocumentDownloader:
         except Exception as e:
             raise PhilipsCancelError(f"Canceling process")
 
-    #TODO: Mirar porque no funciona la extension TODO
     def write_login_username(self, page: Page, user:str):
         """Escribe el usuario en el formulario de login"""
         try:
@@ -97,12 +110,12 @@ class PhilipsDocumentDownloader:
             raise PhilipsStopError(f"Stoping login writing username process")
 
     def write_login_password(self, page: Page, password:str):
-            """Escribe el usuario en el formulario de login"""
-            try:
-                self.write_field(page, "login password field", SELECTORS.LOGIN_PASSWORD_FIELD.value, password)
-            except (PhilipsElementNotFoundError, PhilipsCancelError):
-                philips_logger.error(f"⛔ Error al escribir el password en login")
-                raise PhilipsStopError(f"Stoping login writing password process")
+        """Escribe el usuario en el formulario de login"""
+        try:
+            self.write_field(page, "login password field", SELECTORS.LOGIN_PASSWORD_FIELD.value, password)
+        except (PhilipsElementNotFoundError, PhilipsCancelError):
+            philips_logger.error(f"⛔ Error al escribir el password en login")
+            raise PhilipsStopError(f"Stoping login writing password process")
 
     def click_to_login_button(self, page: Page):
         """Hace click en el boton de login para loguearse"""
@@ -207,8 +220,9 @@ class PhilipsDocumentDownloader:
         elif results_quantity > 1:
             names_items = results.all()
             dicci_list = [{'record_id':record_id, 'name': name.inner_text()} for name in names_items]
-            #print(dicci_list) #TODO: comentar esta linea
-            #self.save_multiples_names(dicci_list) #TODO: Descomentar
+            #print(dicci_list)
+            #TODO: descomentar
+            #self.save_multiples_names(dicci_list)
         results.last.click()
 
     def click_to_timeframe_dropdown(self, page: Page):
@@ -219,14 +233,71 @@ class PhilipsDocumentDownloader:
             philips_logger.error(f"⛔ Error al dar click en el selector de marco de tiempo del informe")
             raise PhilipsTryAgainError(f"Try againg later.")
 
-    def click_ro_custom_date_range_option(self, page: Page):
+    def click_to_custom_date_range_option(self, page: Page):
         """Hace click en la opcion intervalo de fechas personalizado"""
         try:
-            self.click_group_element(page, "Custom Date Range Option", SELECTORS.CUSTOM_DATE_RANGE_OPTION.value, 3)
+            # TODO: pasar texto a constants
+            self.click_by_role_and_name(page, "button", "Custom date range")
         except (PhilipsElementNotFoundError, PhilipsCancelError):
             philips_logger.error(f"⛔ Error al intentar hacer click en Intervalo de fecha perzonalizado")
             raise PhilipsTryAgainError(f"Try againg later")
 
+    def click_to_date_picker_from(self, page: Page):
+        """Hace click en el selector de fecha inicial"""
+        try:
+            self.click_group_element(page, "Date picker from", SELECTORS.DATE_PICKERS.value, 0)
+            page.keyboard.press("Control+A")
+        except (PhilipsElementNotFoundError, PhilipsCancelError):
+            philips_logger.error(f"⛔ Error al intentar hacer click en el selector de fecha inicial")
+            raise PhilipsTryAgainError(f"Try againg later")
+
+    def write_date_from(self, page: Page, initial_date: str):
+        """Escribe la fecha inicial del reporte"""
+        try:
+            first_date_input = page.get_by_test_id("DateInput").first
+            first_date_input.fill(initial_date)
+        except (PhilipsElementNotFoundError, PhilipsCancelError):
+            philips_logger.error(f"⛔ Error al intentar escribir la fecha inicial del reporte")
+            raise PhilipsTryAgainError(f"Try againg later")
+
+    def click_to_date_picker_to(self, page: Page):
+        """Hace click en el selector de fecha final"""
+        try:
+            self.click_group_element(page, "Date picker to", SELECTORS.DATE_PICKERS.value, 1)
+            page.keyboard.press("Control+A")
+        except (PhilipsElementNotFoundError, PhilipsCancelError):
+            philips_logger.error(f"⛔ Error al intentar hacer click en selector de fecha final")
+            raise PhilipsTryAgainError(f"Try againg later")
+    
+    def write_date_to(self, page: Page, final_date: str):
+        """Escribe la fecha final del reporte"""
+        try:
+            last_date_input = page.get_by_test_id("DateInput").last
+            last_date_input.fill(final_date)
+        except (PhilipsElementNotFoundError, PhilipsCancelError):
+            philips_logger.error(f"⛔ Error al intentar escribir la fecha final del reporte")
+            raise PhilipsTryAgainError(f"Try againg later")
+
+    def click_to_create_report(self, page):
+        """Hace click en el boton crear reporte"""
+        try:
+            self.click_element(page, "create Report Buton", SELECTORS.CREATE_REPORT_BUTTON.value)
+        except (PhilipsElementNotFoundError, PhilipsCancelError):
+            philips_logger.error(f"⛔ Error al dar click en el boton de crear el informe")
+            raise PhilipsTryAgainError(f"Try againg later.")
+
+    def download_report(self, page: Page, patient_data: dict):
+        """Descarga el reporte"""
+        try:
+            with page.expect_download() as download_info:
+                self.click_group_element(page, "PDF Generator", SELECTORS.GENERATE_PDF_BUTTON.value, 0)
+                time.sleep(PAUSES_TIME.LONG.value)
+            download = download_info.value
+            philips_logger.info("💾 Saving the PDF File.")
+            download.save_as(f"reports/{patient_data['file_name']}")
+        except (PhilipsElementNotFoundError, PhilipsCancelError):
+            philips_logger.error(f"⛔ Error al dar click en el boton de crear el informe")
+            raise PhilipsTryAgainError(f"Try againg later.")
 
     def update_database_record_to_error(self, record_id: int, obs: str, error_number = -1):
         """Actualiza el registro en base de datos y lo setea como error"""
@@ -249,30 +320,36 @@ class PhilipsDocumentDownloader:
             philips_logger.error(f"⛔ Unexpected error updating quantity of name links: {e}")
             raise PhilipsAbortError(f"Unexpected error updating quantity of name links: {e}")
 
-    def loop_through_records(self, page: Page, records_to_look_for: list):
+    def loop_through_records(self, page: Page, patients_to_look_for: list):
         """Recorre los registros a descargar"""
-        for i, record in enumerate(records_to_look_for):
-            philips_logger.info(f"--- 🔍 Looking for record with id: {record['id']} : ({i+1}/{len(records_to_look_for)}) ---")
+        for i, patient in enumerate(patients_to_look_for):
+            philips_logger.info(f"--- 🔍 Looking for record with id: {patient['id']} : ({i+1}/{len(patients_to_look_for)}) ---")
             try:
                 self.go_to_patients_page(page)
                 time.sleep(PAUSES_TIME.LONG.value)
                 
                 self.evaluate_traking_modal(page)
                 self.click_to_id_externo(page)
-                self.write_patient_document_number(page, record['document_number'])
+                self.write_patient_document_number(page, patient['document_number'])
                 self.click_to_search_patients(page)
                 time.sleep(PAUSES_TIME.LONG.value)
-                self.try_to_click_patient(page, record['id'])
+                self.try_to_click_patient(page, patient['id'])
                 self.click_to_timeframe_dropdown(page)
-                self.click_ro_custom_date_range_option(page)
+                self.click_to_custom_date_range_option(page)
+                self.click_to_date_picker_from(page)
+                self.write_date_from(page, patient['report_initial_date'])
+                self.click_to_date_picker_to(page)
+                self.write_date_to(page, patient['report_final_date'])
+                self.click_to_create_report(page)
+                self.download_report(page, patient)
                 #self.evaluate_document_search_cleaner(page)
                 
             except PhilipsTryAgainError as e:
-                philips_logger.error(f"⛔ TryAgainError: {e}. Skipping record with document number: {record['document_number']}")
+                philips_logger.error(f"⛔ TryAgainError: {e}. Skipping record with document number: {patient['document_number']}")
                 #self.update_database_record_to_error(record["id"], f"{ERROR_TYPES.TRY_AGAIN.value}: {e}", DB_ERROR_NUMBERS.get(ERROR_TYPES.TRY_AGAIN, ERROR_TYPES.DEFAULT.value))
                 continue
             except PhilipsNoPatientFoundError as e:
-                philips_logger.error(f"⛔ PatientNotFoundError: {e}. Skipping record with document number: {record['document_number']}")
+                philips_logger.error(f"⛔ PatientNotFoundError: {e}. Skipping record with document number: {patient['document_number']}")
                 #self.update_database_record_to_error(record["id"], f"{ERROR_TYPES.NO_PATIENT.value}: {e}", DB_ERROR_NUMBERS.get(ERROR_TYPES.NO_PATIENT, ERROR_TYPES.DEFAULT.value))
                 continue
             except PhilipsNoDataError as e:
@@ -285,15 +362,15 @@ class PhilipsDocumentDownloader:
                 raise PhilipsAbortError (f"Aborting process: {e}")
         
     def navegate(self, url: str, user: str, password: str):
-        records_to_look_for = self.get_list_to_look_for()
+        patients_to_look_for = self.get_list_to_look_for()
         with Stealth().use_sync(sync_playwright()) as p:
             try:
-                self.launch_headless_browser(p, False)
+                self.launch_headless_browser(p)
                 page = self.connect_to_page()
                 self.open_philips_website(page, url)
                 self.login(page, user, password)
                 time.sleep(PAUSES_TIME.SHORT.value)
-                self.loop_through_records(page, records_to_look_for)
+                self.loop_through_records(page, patients_to_look_for)
                 self.logout(page)
             except RuntimeError as e:
                 philips_logger.error(f"⛔ Execution error: {e}")

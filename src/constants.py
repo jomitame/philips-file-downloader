@@ -31,20 +31,17 @@ class SELECTORS(Enum):
     USAGE_TRAKING_MODAL = ".analytics-modal"
     USER_MENU =  "#pr-primary-navbar-v2-toggle-user-nav"
     LOGOUT_OPTION = ".logout"
-    #EXTERNAL_ID = ".pr-btn-label.ng-star-inserted"
     EXTERNAL_ID = ".has-label.icon-left.pr-btn"
     DOCUMENT_SEARCH_CLEANER = ".pr-btn-clear.pr-btn-alt.has-icon.icon-left.pr-btn.pr-btn-quiet.pr-search-btn-reset.pr-fade-show.pr-fade-hide"
     DOCUMENT_SEARCH_FIELD = ".form-control.search-term.ng-pristine.ng-valid.ng-star-inserted.ng-touched"
     DOCUMENT_SEARCH_FINDER = ".search-term-input-group-btn.lh-sm"
-    CARD_SEARCH_RESULT = ".pr-result.has-indicators.ng-star-inserted"#TODO: ver si se usa
     NAME_CARD_SEARCH_RESULT = ".pr-result-title.pr-result-title-link"
-    #TIMEFRAME_DROPDOWN = ".pr-select-selection.ng-tns-c4250894927-3.ng-star-inserted"
     TIMEFRAME_DROPDOWN = ".ng-untouched.ng-pristine.ng-valid.ng-star-inserted"
-    CUSTOM_DATE_RANGE_OPTION = ".pr-btn-label.ng-tns-c4250894927-3"
+    DATE_PICKERS = ".input-group.input-group-inline"
+    CREATE_REPORT_BUTTON = ".pr-btn-createReportBtn.pr-btn-undefined.has-label.icon-left.pr-btn"
+    GENERATE_PDF_BUTTON = ".has-icon.icon-left.pr-btn.pr-btn-link"
 
-#pr-btn pr-select-dropdown-btn form-control ng-tns-c4250894927-5 ng-trigger ng-trigger-fadeInOut ng-star-inserted
-#pr-btn-label ng-tns-c4250894927-5
-#ng-tns-c4250894927-9 ng-star-inserted
+
 # sleep pause times
 class PAUSES_TIME(Enum):
     QUICK = 1
