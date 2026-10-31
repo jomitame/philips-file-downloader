@@ -77,7 +77,7 @@ class PhilipsDatabaseManager:
 			cursor = self.conn.cursor()
 			query = '''
 				INSERT OR IGNORE INTO names (
-					recodr_id, name
+					record_id, name
 				)
 				VALUES (?, ?)
 			'''

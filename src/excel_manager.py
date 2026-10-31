@@ -38,9 +38,9 @@ class PhilipsExcelManager:
         )
 
         if "report_initial_date" in df.columns:
-            df["report_initial_date"] = pd.to_datetime(df["report_initial_date"]).dt.strftime('%d/%m/%Y')
+            df["report_initial_date"] = pd.to_datetime(df["report_initial_date"]).dt.strftime('%m/%d/%Y')
         if "report_final_date" in df.columns:
-            df["report_final_date"] = pd.to_datetime(df["report_final_date"]).dt.strftime('%d/%m/%Y')
+            df["report_final_date"] = pd.to_datetime(df["report_final_date"]).dt.strftime('%m/%d/%Y')
 
         return df
 

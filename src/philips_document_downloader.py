@@ -157,6 +157,7 @@ class PhilipsDocumentDownloader:
         time.sleep(PAUSES_TIME.SHORT.value)
         self.click_element(page, "logout option", SELECTORS.LOGOUT_OPTION.value)
 
+    #TODO: evulua si es necesario este metodo
     def evaluate_document_search_cleaner(self, page: Page):
         """Evalua si aparece el limpador de campo y le da click"""
         cleaner_showed = page.locator(SELECTORS.DOCUMENT_SEARCH_CLEANER.value).count() > 0
@@ -214,7 +215,7 @@ class PhilipsDocumentDownloader:
         results = self.get_patients_result(page, record_id)
         results_quantity = results.count()
         #TODO: descomentar
-        #self.update_database_record_with_quantity_names(record_id, results_quantity)
+        self.update_database_record_with_quantity_names(record_id, results_quantity)
         if results_quantity < 1:
             raise PhilipsNoPatientFoundError("No patients for this document number")
         elif results_quantity > 1:
@@ -222,7 +223,7 @@ class PhilipsDocumentDownloader:
             dicci_list = [{'record_id':record_id, 'name': name.inner_text()} for name in names_items]
             #print(dicci_list)
             #TODO: descomentar
-            #self.save_multiples_names(dicci_list)
+            self.save_multiples_names(dicci_list)
         results.last.click()
 
     def click_to_timeframe_dropdown(self, page: Page):
@@ -286,7 +287,7 @@ class PhilipsDocumentDownloader:
             philips_logger.error(f"⛔ Error al dar click en el boton de crear el informe")
             raise PhilipsTryAgainError(f"Try againg later.")
 
-    def download_report(self, page: Page, patient_data: dict):
+    def download_report(self, page: Page, file_name: str):
         """Descarga el reporte"""
         try:
             with page.expect_download() as download_info:
@@ -294,7 +295,7 @@ class PhilipsDocumentDownloader:
                 time.sleep(PAUSES_TIME.LONG.value)
             download = download_info.value
             philips_logger.info("💾 Saving the PDF File.")
-            download.save_as(f"reports/{patient_data['file_name']}")
+            download.save_as(f"reports/{file_name}")
         except (PhilipsElementNotFoundError, PhilipsCancelError):
             philips_logger.error(f"⛔ Error al dar click en el boton de crear el informe")
             raise PhilipsTryAgainError(f"Try againg later.")
@@ -320,6 +321,17 @@ class PhilipsDocumentDownloader:
             philips_logger.error(f"⛔ Unexpected error updating quantity of name links: {e}")
             raise PhilipsAbortError(f"Unexpected error updating quantity of name links: {e}")
 
+    def update_database_record_to_downloaded(self, record_id: int):
+        philips_logger.info(f"✅ Updating the record with ID {record_id} to downloaded in the database.")
+        try:
+            with self.database_manager as db:
+                db.update_record_to_downloaded(record_id)
+        except PhilipsDatabaseError as e:
+            philips_logger.error(f"⛔ Error updating record to downloaded: {e}")
+        except Exception as e:
+            philips_logger.error(f"⛔ Unexpected error updating record to downloaded: {e}")
+            raise PhilipsAbortError(f"Unexpected error updating record to downloaded: {e}")
+
     def loop_through_records(self, page: Page, patients_to_look_for: list):
         """Recorre los registros a descargar"""
         for i, patient in enumerate(patients_to_look_for):
@@ -341,16 +353,17 @@ class PhilipsDocumentDownloader:
                 self.click_to_date_picker_to(page)
                 self.write_date_to(page, patient['report_final_date'])
                 self.click_to_create_report(page)
-                self.download_report(page, patient)
+                self.download_report(page, patient['file_name'])
+                self.update_database_record_to_downloaded(patient["id"])
                 #self.evaluate_document_search_cleaner(page)
                 
             except PhilipsTryAgainError as e:
                 philips_logger.error(f"⛔ TryAgainError: {e}. Skipping record with document number: {patient['document_number']}")
-                #self.update_database_record_to_error(record["id"], f"{ERROR_TYPES.TRY_AGAIN.value}: {e}", DB_ERROR_NUMBERS.get(ERROR_TYPES.TRY_AGAIN, ERROR_TYPES.DEFAULT.value))
+                self.update_database_record_to_error(patient["id"], f"{ERROR_TYPES.TRY_AGAIN.value}: {e}", DB_ERROR_NUMBERS.get(ERROR_TYPES.TRY_AGAIN, ERROR_TYPES.DEFAULT.value))
                 continue
             except PhilipsNoPatientFoundError as e:
                 philips_logger.error(f"⛔ PatientNotFoundError: {e}. Skipping record with document number: {patient['document_number']}")
-                #self.update_database_record_to_error(record["id"], f"{ERROR_TYPES.NO_PATIENT.value}: {e}", DB_ERROR_NUMBERS.get(ERROR_TYPES.NO_PATIENT, ERROR_TYPES.DEFAULT.value))
+                self.update_database_record_to_error(patient["id"], f"{ERROR_TYPES.NO_PATIENT.value}: {e}", DB_ERROR_NUMBERS.get(ERROR_TYPES.NO_PATIENT, ERROR_TYPES.DEFAULT.value))
                 continue
             except PhilipsNoDataError as e:
                 pass
