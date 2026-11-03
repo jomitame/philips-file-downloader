@@ -16,7 +16,7 @@ DATABASE_NAME = getenv("DATABASE_NAME", "")
 EXCEL_FILE_NAME = getenv("EXCEL_FILE_NAME", "")
 
 # Data
-MINIMUM_REPORTS_TO_DOWNLOAD = 10
+MINIMUM_REPORTS_TO_DOWNLOAD = 4
 
 # Pages
 class PAGES(Enum):
@@ -36,10 +36,12 @@ class SELECTORS(Enum):
     DOCUMENT_SEARCH_FIELD = ".form-control.search-term.ng-pristine.ng-valid.ng-star-inserted.ng-touched"
     DOCUMENT_SEARCH_FINDER = ".search-term-input-group-btn.lh-sm"
     NAME_CARD_SEARCH_RESULT = ".pr-result-title.pr-result-title-link"
-    TIMEFRAME_DROPDOWN = ".ng-untouched.ng-pristine.ng-valid.ng-star-inserted"
+    #TIMEFRAME_DROPDOWN = ".ng-untouched.ng-pristine.ng-valid.ng-star-inserted"
+    TIMEFRAME_DROPDOWN = ".ng-untouched.ng-valid.ng-star-inserted.ng-dirty"
     DATE_PICKERS = ".input-group.input-group-inline"
     CREATE_REPORT_BUTTON = ".pr-btn-createReportBtn.pr-btn-undefined.has-label.icon-left.pr-btn"
     GENERATE_PDF_BUTTON = ".has-icon.icon-left.pr-btn.pr-btn-link"
+    NO_DATA_MESSAGE ="section.pr-section.pr-tainer.ng-star-inserted p.ng-star-inserted"
 
 
 # sleep pause times
